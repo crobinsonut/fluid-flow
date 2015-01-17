@@ -5,6 +5,9 @@
     canvas       = document.querySelector('#canvas'),
     startbutton  = document.querySelector('#startbutton');
     
+    //sketchpad for effects
+    var cv2 = document.createElement('canvas');
+    
     navigator.getMedia = ( navigator.getUserMedia || 
         navigator.webkitGetUserMedia ||
         navigator.mozGetUserMedia ||
@@ -106,25 +109,14 @@
     }
     
     // A 3x3 Sobel edge detect (similar to Photoshop's)
-    function findEdges(inData, outData, width, height, options, progress) {
+    function findEdges(inData, outData, width, height) {
         var n = width * height * 4,
         i,
         data1 = [],
         data2 = [],
         gr1, gr2, gg1, gg2, gb1, gb2,
-        prog, lastProg = 0,
-        convProgress1, convProgress2;
+        prog, lastProg = 0;
         
-        if (progress) {
-            convProgress1 = function(p) {
-                progress(p * 0.4);
-                return p;
-            };
-            convProgress2 = function(p) {
-                progress(0.4 + p * 0.4);
-                return p;
-            };
-        }
         convolve3x3(inData, data1, width, height,
             [[-1, 0, 1],
             [-2, 0, 2],
@@ -152,15 +144,7 @@
             outData[i+1] = 255 - (gg1 + gg2) * 0.8;
             outData[i+2] = 255 - (gb1 + gb2) * 0.8;
             outData[i+3] = inData[i+3];
-            if (progress) {
-                prog = 0.8 + (i/n*100 >> 0) / 100 * 0.2;
-                if (prog > lastProg) {
-                    lastProg = progress(prog);
-                }
-            }
         }
-        
-        return outData;
     }
     
     function filter(cutoff, inData, outData, width, height){
@@ -187,13 +171,9 @@
     }
     
     function takepicture() {
-        var outData;
         var inData, outData;
         var width, height;
-        var n;
-        var cv2;
         
-        cv2 = document.createElement('canvas');
         width = canvas.width;
         height = canvas.height;
         
@@ -204,11 +184,11 @@
         filter(0.2, inData.data, outData.data, width, height);
         inData.data.set(outData.data);
         findEdges(inData.data, outData.data, width, height);
-        
-        
+        //inData.data.set(outData.data);
+        for (var k=4*width*(height-1);k<4*width*height;k++) {
+            outData.data[k] = 255;
+        }
         canvas.getContext('2d').putImageData(outData, 0, 0);
-        //var data = canvas.toDataURL('image/png');
-        //photo.setAttribute('src', data);
     }
     
     startbutton.addEventListener('click', function(ev){
