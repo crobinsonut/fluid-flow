@@ -185,17 +185,23 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	function logEvent(e){console.log(e);}
 	function noop(e){}
 	function updateBarrier(e){
+		var i;
+		var n = e.data.outData.length;
+		
 		if(oldBarrier !== undefined){
 			var oldn = oldBarrier.length;
-			for(var i=0; i<oldn; i+=128){
+			for(i=0; i<oldn; i+=8){
 				removeBarrier(oldBarrier[i], oldBarrier[i+1]);
-				addBarrier(e.data.outData[i], e.data.outData[i+1]);
-				oldBarrier[i] = e.data.outData[i];
-				oldBarrier[i+1] = e.data.outData[i+1];
 			}
 		}
 		
-		oldBarrier = e.data.outData.slice(0);
+		oldBarrier = new Array(n);
+		
+		for(i=0;  i<n; i+=8){
+			addBarrier(e.data.outData[i], e.data.outData[i+1]);
+			oldBarrier[i] = e.data.outData[i];
+			oldBarrier[i+1] = e.data.outData[i+1];
+		}
 	}
 	
 	var oldBarrier;

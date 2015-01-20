@@ -9,9 +9,9 @@ function extractCoordinates(contour, outData, width, height){
     var x_camera, y_camera;
     var x_grid, y_grid;
     var Ax = 0.3125;
-    var Ay = 0.16666666666666666;
+    var Ay = -0.16666666666666666;
     var Bx = 0.0;
-    var By = 0.0;
+    var By = 80.0;
     
     for(var i=0; i<width*height; i++){
         if(outData.data[i] === 0){
