@@ -103,21 +103,22 @@ function render(){
         var width = inCanvas.width;
         var height = inCanvas.height;
         
-        outContext.drawImage(video, 0, 0, width, height);
-        outData = outContext.getImageData(0, 0, width, height);
+        inContext.drawImage(video, 0, 0, 200, 200);
+        setTimeout(render, 1000/15);
+        // outData = outContext.getImageData(0, 0, width, height);
         
-        worker = new Worker("findedges.js");
-        worker.onmessage = paintCanvas;
+        //worker = new Worker("findedges.js");
+        //worker.onmessage = paintCanvas;
         // var edgeFinder = new Job("convolution.js", {}, noop, logEvent);
         // var coordinates = new Job("coordinates.js", {}, noop, logEvent);
         // pipeline.submit([edgeFinder], paintCanvas);
-        var data = {
-            "inData" : outData,
-            "width" : width,
-            "height" : height
-        };
+        // var data = {
+        //     "inData" : outData,
+        //     "width" : width,
+        //     "height" : height
+        // };
         
-        worker.postMessage(data);
+        //worker.postMessage(data);
     
                 
         //blackedges(outData.data, inData.data, width, height);

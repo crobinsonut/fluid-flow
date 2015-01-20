@@ -2,12 +2,12 @@ onmessage = function(e){
     var imageData = new ImageData(e.data.width, e.data.height);
     var coord = [];
     imageData.data.set(e.data.inData.data);
-    blackedges(e.data.inData.data, imageData.data, e.data.width, e.data.height, coord);
+    blackedges(e.data.cutoff, e.data.inData.data, imageData.data, e.data.width, e.data.height, e.data.sx, e.data.sy, e.data.tx, e.data.ty, coord);
     postMessage({"outData" : coord});
 };
 
 // A 3x3 Sobel edge detect (similar to Photoshop's)
-function blackedges(inData, outData, width, height, coord) {
+function blackedges(cutoff, inData, outData, width, height, sx, sy, tx, ty, coord) {
     // findblack
     var x_camera, y_camera;
     var x_grid, y_grid;
@@ -24,7 +24,7 @@ function blackedges(inData, outData, width, height, coord) {
         g = inData[i+1];
         b = inData[i+2];
         
-        if (Math.max(r/255, g/255, b/255) <= 0.2) {
+        if (Math.max(r/255, g/255, b/255) <= cutoff) {
             midData[i] = 0;
             midData[i+1] = 0;
             midData[i+2] = 0;
@@ -86,11 +86,14 @@ function blackedges(inData, outData, width, height, coord) {
             x_camera = i % width;
             y_camera = (i - x_camera) / width;
             
+            x_camera = sx * x_camera + tx;
+            y_camera = sy * y_camera + ty;
+            
             x_grid =  Ax * x_camera + Bx;
             y_grid = Ay * y_camera + By;
             
-            coord.push(x_grid);
-            coord.push(y_grid);
+            coord.push(Math.floor(x_grid));
+            coord.push(Math.floor(y_grid));
         }
     }
 }

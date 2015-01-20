@@ -125,6 +125,19 @@ browsers. For best results, use Google Chrome.</canvas>
 	&nbsp;&nbsp;Steps per second: <span id="speedReadout">0</span>
 	&nbsp;&nbsp;<input id="rafCheck" checked="checked" onchange="resetTimer()" type="checkbox">Faster?
 </div>
+<div>
+	x-scale
+	<input id="xscale" value="1">
+	y-scale
+	<input id="yscale" value="1"> 
+	x-off
+	<input id="xoff" value="0">
+	y-off
+	<input id="yoff" value="0">
+	cutoff
+	<input id="cutoff" min="0" max="0.2" step="0.01" value="0.2">
+	
+	
 <div style="margin-top:4px">
 	<!--<input id="pixelCheck" type="checkbox" checked onchange="resetTimer()">Use pixel graphics-->
 	Show:
@@ -189,7 +202,8 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 		var i;
 		var n = e.data.outData.length;
 		var oldn = oldBarrier.length;
-		
+		var x,y;
+	
 		worker.terminate();
 		worker = undefined;
 			
@@ -200,9 +214,12 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 		oldBarrier = new Array(n);
 		
 		for(i=0;  i<n; i+=2){
-			addBarrier(e.data.outData[i], e.data.outData[i+1]);
-			oldBarrier[i] = e.data.outData[i];
-			oldBarrier[i+1] = e.data.outData[i+1];
+			x = e.data.outData[i];
+			y = e.data.outData[i+1];
+			
+			addBarrier(x,y);
+			oldBarrier[i] = x;
+			oldBarrier[i+1] = y;
 		}
 		
 		paintCanvas();
@@ -212,15 +229,20 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	var oldBarrier = new Array(0);
 	var worker;
 
-	var busy;
 	var video = document.querySelector('#video');
-	var inCanvas = document.createElement("canvid");
+	var inCanvas = document.createElement("canvas");
 	var outCanvas = document.createElement("canvas");
 	
 	var inContext; 
 	var outContext;
 	var inData;
 	var outData;
+	
+	var sxSlider = document.querySelector('#xscale');
+	var sySlider = document.querySelector('#yscale');
+	var txSlider = document.querySelector('#xoff');
+	var tySlider = document.querySelector('#yoff');
+	var coffSlider = document.querySelector('#cutoff');
 	
 	// Global variables:	
 	var mobile = navigator.userAgent.match(/iPhone|iPad|iPod|Android|BlackBerry|Opera Mini|IEMobile/i)
@@ -436,7 +458,12 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 			var data = {
 				"inData" : outData,
 				"width" : width,
-				"height" : height
+				"height" : height,
+				"sx" : parseFloat(sxSlider.value),
+				"sy" : parseFloat(sySlider.value),
+				"tx" : parseFloat(txSlider.value),
+				"ty" : parseFloat(tySlider.value),
+				"cutoff" : parseFloat(coffSlider.value)
 			};
 			
 			worker.postMessage(data);
