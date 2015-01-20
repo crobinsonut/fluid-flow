@@ -179,14 +179,28 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 </div>
 <video id="video" style="display:none;"></video>
 <script src="fluid-flow_files/barrierdata.js"></script>
-<script src="webcam.js"></script>
 <script src="multitask.js"></script>
 <script>
+	function logData(e){console.log(e.data);}
+	function logEvent(e){console.log(e);}
+	function noop(e){}
+	function updateBarrier(e){
+		if(oldBarrier !== undefined){
+			var oldn = oldBarrier.length;
+			for(var i=0; i<oldn; i+=128){
+				removeBarrier(oldBarrier[i], oldBarrier[i+1]);
+				addBarrier(e.data.outData[i], e.data.outData[i+1]);
+				oldBarrier[i] = e.data.outData[i];
+				oldBarrier[i+1] = e.data.outData[i+1];
+			}
+		}
+		
+		oldBarrier = e.data.outData.slice(0);
+	}
 	
-	var filter = new Scheduler();
-	var edgeDetector = new Scheduler();
-	var borderEraser = new Scheduler();
-	var coordExtractor = new Scheduler();
+	var oldBarrier;
+	var pipeline = new Pipeline(3);
+
 	
 	var contour;
 	var busy;
@@ -407,49 +421,31 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 			inContext.drawImage(video, 0, 0, width, height);
 			inData = inContext.getImageData(0, 0, width, height);
 			outData = outContext.getImageData(0, 0, width, height);
-		
-			filter.execute();
-			edgeDetector.execute();
-			//edgeRemover.execute();
-			coordExtractor.execute()
 			
-			filter.submit(new Job(
-				"filter.js",
-				{
-					"inData" : inData,
-					"width" : width,
-					"height" : height,
-					"cutoff" : 0.2
-				},
-				function(e){
-					edgeDetector.submit(new Job(
-						"findedges.js",
-						{
-							"inData" : e.data,
-							"width" : width,
-							"height" : height,
-						},
-						function(e){
-							coordExtractor.submit(new Job(
-								"coordinatesextractor.js",
-								{
-									"inData" : e.data,
-									"width" : width,
-									"height" : height
-								},
-								function(e){console.log(e.data);},
-								function(e){console.log("boo");}
-							));
-						},
-						function(e){console.log("boo");}
-					));
-				},
-				function(e){
-					console.log("boo");
-				}
-			));
+			var filter = new Job("filter.js", {}, noop, logEvent);
+			var edgeFinder = new Job("findedges.js", {}, noop, logEvent);
+			var coordinates = new Job("coordinates.js", {}, noop, logEvent);
 			
-			setTimeout(render, 10);
+			filter.data = {
+				"width" : width,
+				"height" : height,
+				"cutoff" : 0.2,
+				"inData" : inData
+			};
+			
+			edgeFinder.data = {
+				"width" : width,
+				"height" : height
+			};
+			
+			coordinates.data = {
+				"width" : width,
+				"height" : height
+			};
+			
+			pipeline.submit([filter, edgeFinder, coordinates], updateBarrier);
+				
+			setTimeout(render, 150);
 		}
 	}
 	// Functions to convert rgb to hex color string (from stackoverflow):
@@ -1000,7 +996,7 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	function removeBarrier(x, y) {
 		if (barrier[x+y*xdim]) {
 			barrier[x+y*xdim] = false;
-			paintCanvas();
+			//paintCanvas();
 		}
 	}
 

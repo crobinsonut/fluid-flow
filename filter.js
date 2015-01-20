@@ -2,7 +2,7 @@ onmessage = function(e){
     var outData = new ImageData(e.data.width, e.data.height);
     outData.data.set(e.data.inData.data);
     filter(e.data.cutoff, e.data.inData.data, outData.data, e.data.width, e.data.height);
-    postMessage(outData);
+    postMessage({"outData" : outData});
 };
 
 function filter(cutoff, inData, outData, width, height){

@@ -1,8 +1,8 @@
 onmessage = function(e){
     var outData = new ImageData(e.data.width, e.data.height);
     outData.data.set(e.data.inData.data);
-    findEdges(e.data.cutoff, e.data.inData.data, outData.data, e.data.width, e.data.height);
-    postMessage(outData);
+    findEdges(e.data.inData.data, outData.data, e.data.width, e.data.height);
+    postMessage({"outData" : outData});
 };
 
 function convolve3x3(inData, outData, width, height, kernel, progress, alpha, invert, mono) {
@@ -108,5 +108,9 @@ function findEdges(inData, outData, width, height) {
         outData[i+1] = 255 - (gg1 + gg2) * 0.8;
         outData[i+2] = 255 - (gb1 + gb2) * 0.8;
         outData[i+3] = inData[i+3];
+    }
+    
+    for (var k=4*width*(height-1);k<4*width*height;k++) {
+        outData[k] = 255;
     }
 }
