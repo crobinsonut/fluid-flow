@@ -1,9 +1,99 @@
 onmessage = function(e){
-    var outData = new ImageData(e.data.width, e.data.height);
-    outData.data.set(e.data.inData.data);
-    findEdges(e.data.inData.data, outData.data, e.data.width, e.data.height);
-    postMessage({"outData" : outData});
+    var imageData = new ImageData(e.data.width, e.data.height);
+    var coord = [];
+    imageData.data.set(e.data.inData.data);
+    blackedges(e.data.inData.data, imageData.data, e.data.width, e.data.height, coord);
+    postMessage({"outData" : coord});
 };
+
+// A 3x3 Sobel edge detect (similar to Photoshop's)
+function blackedges(inData, outData, width, height, coord) {
+    // findblack
+    var x_camera, y_camera;
+    var x_grid, y_grid;
+    var Ax = 0.3125;
+    var Ay = -0.16666666666666666;
+    var Bx = 0.0;
+    var By = 80.0;
+    var n = width * height * 4,
+    midData = [],
+    r, g, b;
+    
+    for (var i=0;i<n;i+=4) {
+        r = inData[i];
+        g = inData[i+1];
+        b = inData[i+2];
+        
+        if (Math.max(r/255, g/255, b/255) <= 0.2) {
+            midData[i] = 0;
+            midData[i+1] = 0;
+            midData[i+2] = 0;
+            midData[i+3] = 255;
+        } else {
+            midData[i] = 255;
+            midData[i+1] = 255;
+            midData[i+2] = 255;
+            midData[i+3] = 255;
+        }
+    }
+    
+    // blackedges: apply findedges to findblack
+    var i,
+    outline = [],
+    j = 0,
+    r, c,
+    data1 = [],
+    data2 = [],
+    gr1, gr2, gg1, gg2, gb1, gb2,
+    prog, lastProg = 0,
+    convProgress1, convProgress2;
+    
+    convolve3x3(midData, data1, width, height,
+        [[-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]]
+    );
+    convolve3x3(midData, data2, width, height,
+        [[-1, -2, -1],
+        [ 0,  0,  0],
+        [ 1,  2,  1]]
+    );
+    
+    for (i=0;i<n;i+=4) {
+        gr1 = Math.abs(data1[i]);
+        gr2 = Math.abs(data2[i]);
+        gg1 = Math.abs(data1[i+1]);
+        gg2 = Math.abs(data2[i+1]);
+        gb1 = Math.abs(data1[i+2]);
+        gb2 = Math.abs(data2[i+2]);
+        
+        outData[i] = 255 - (gr1 + gr2) * 0.8;
+        outData[i+1] = 255 - (gg1 + gg2) * 0.8;
+        outData[i+2] = 255 - (gb1 + gb2) * 0.8;
+        outData[i+3] = inData[i+3];
+    }
+    
+    // wipe out bottom black edge
+    for (k=4*width*(height-1);k<4*width*height;k++) {
+        outData[k] = 255;
+    }
+    
+    var grid_idx;
+    var n = width * height;
+    
+    for(var i=0; i<n; i++){
+        if(outData[i*4] === 0){
+            x_camera = i % width;
+            y_camera = (i - x_camera) / width;
+            
+            x_grid =  Ax * x_camera + Bx;
+            y_grid = Ay * y_camera + By;
+            
+            coord.push(x_grid);
+            coord.push(y_grid);
+        }
+    }
+}
 
 function convolve3x3(inData, outData, width, height, kernel, progress, alpha, invert, mono) {
     var idx, r, g, b, a,
@@ -69,48 +159,5 @@ function convolve3x3(inData, outData, width, height, kernel, progress, alpha, in
                 }
             }
         }
-    }
-}
-
-// A 3x3 Sobel edge detect (similar to Photoshop's)
-function findEdges(inData, outData, width, height) {
-    var n = width * height * 4,
-    i,
-    data1 = [],
-    data2 = [],
-    gr1, gr2, gg1, gg2, gb1, gb2,
-    prog, lastProg = 0;
-    
-    convolve3x3(inData, data1, width, height,
-        [[-1, 0, 1],
-        [-2, 0, 2],
-        [-1, 0, 1]]
-    );
-    convolve3x3(inData, data2, width, height,
-        [[-1, -2, -1],
-        [ 0, 0, 0],
-        [ 1, 2, 1]]
-    );
-    for (i=0;i<n;i+=4) {
-        gr1 = data1[i];
-        gr2 = data2[i];
-        gg1 = data1[i+1];
-        gg2 = data2[i+1];
-        gb1 = data1[i+2];
-        gb2 = data2[i+2];
-        if (gr1 < 0) gr1 = -gr1;
-        if (gr2 < 0) gr2 = -gr2;
-        if (gg1 < 0) gg1 = -gg1;
-        if (gg2 < 0) gg2 = -gg2;
-        if (gb1 < 0) gb1 = -gb1;
-        if (gb2 < 0) gb2 = -gb2;
-        outData[i] = 255 - (gr1 + gr2) * 0.8;
-        outData[i+1] = 255 - (gg1 + gg2) * 0.8;
-        outData[i+2] = 255 - (gb1 + gb2) * 0.8;
-        outData[i+3] = inData[i+3];
-    }
-    
-    for (var k=4*width*(height-1);k<4*width*height;k++) {
-        outData[k] = 255;
     }
 }

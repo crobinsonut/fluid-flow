@@ -187,28 +187,29 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	function updateBarrier(e){
 		var i;
 		var n = e.data.outData.length;
+		var oldn = oldBarrier.length;
 		
-		if(oldBarrier !== undefined){
-			var oldn = oldBarrier.length;
-			for(i=0; i<oldn; i+=8){
-				removeBarrier(oldBarrier[i], oldBarrier[i+1]);
-			}
+		worker.terminate();
+		worker = undefined;
+			
+		for(i=0; i<oldn; i+=2){
+			removeBarrier(oldBarrier[i], oldBarrier[i+1]);
 		}
 		
 		oldBarrier = new Array(n);
 		
-		for(i=0;  i<n; i+=8){
+		for(i=0;  i<n; i+=2){
 			addBarrier(e.data.outData[i], e.data.outData[i+1]);
 			oldBarrier[i] = e.data.outData[i];
 			oldBarrier[i+1] = e.data.outData[i+1];
 		}
+		
+		setTimeout(render, 1000/10);
 	}
 	
-	var oldBarrier;
-	var pipeline = new Pipeline(3);
+	var oldBarrier = new Array(0);
+	var worker;
 
-	
-	var contour;
 	var busy;
 	var video = document.querySelector('#video');
 	var inCanvas = document.createElement("canvas");
@@ -424,34 +425,19 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 			var width = inCanvas.width;
 			var height = inCanvas.height;
 			
-			inContext.drawImage(video, 0, 0, width, height);
-			inData = inContext.getImageData(0, 0, width, height);
+			outContext.drawImage(video, 0, 0, width, height);
 			outData = outContext.getImageData(0, 0, width, height);
 			
-			var filter = new Job("filter.js", {}, noop, logEvent);
-			var edgeFinder = new Job("findedges.js", {}, noop, logEvent);
-			var coordinates = new Job("coordinates.js", {}, noop, logEvent);
-			
-			filter.data = {
-				"width" : width,
-				"height" : height,
-				"cutoff" : 0.2,
-				"inData" : inData
-			};
-			
-			edgeFinder.data = {
+			worker = new Worker("findedges.js");
+			worker.onmessage = updateBarrier;
+		
+			var data = {
+				"inData" : outData,
 				"width" : width,
 				"height" : height
 			};
 			
-			coordinates.data = {
-				"width" : width,
-				"height" : height
-			};
-			
-			pipeline.submit([filter, edgeFinder, coordinates], updateBarrier);
-				
-			setTimeout(render, 150);
+			worker.postMessage(data);
 		}
 	}
 	// Functions to convert rgb to hex color string (from stackoverflow):

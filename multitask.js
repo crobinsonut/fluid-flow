@@ -44,12 +44,11 @@ Scheduler.prototype.execute = function(){
     
     if(this.queue.length !== 0){
         var job = this.queue.shift();
-        // job.start(Scheduler.prototype.execute);
         job.start(this.execute.bind(this));
         return;
     }
     
-    setTimeout(this.execute.bind(this), 10);
+    setTimeout(this.execute.bind(this), 1000/30);
 };
 
 Scheduler.prototype.submit = function(job){

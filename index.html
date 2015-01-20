@@ -1,4 +1,131 @@
 <video id="video"></video>
-<button id="startbutton">Take photo</button>
 <canvas id="canvas"></canvas>
-<script src="webcam.js"></script>
+<script src="multitask.js"></script>
+<script>
+
+
+function logData(e){console.log(e.data);}
+function logEvent(e){console.log(e);}
+function noop(e){}
+function paintCanvas(e){
+    console.log(e.data.outData);
+    var imageData = e.data.outData;
+    inContext.putImageData(imageData, 0, 0);
+    worker.terminate();
+    worker = undefined;
+    render();
+}
+
+var worker;
+var video = document.querySelector('#video');
+var inCanvas = document.querySelector("#canvas");
+var outCanvas = document.createElement("canvas");
+
+var inContext; 
+var outContext;
+var inData;
+var outData;
+
+navigator.getMedia = ( navigator.getUserMedia || 
+    navigator.webkitGetUserMedia ||
+    navigator.mozGetUserMedia ||
+    navigator.msGetUserMedia);
+    
+    navigator.getMedia(
+    { 
+        video: true, 
+        audio: false 
+    },
+    function(stream) {
+        if (navigator.mozGetUserMedia) { 
+            video.mozSrcObject = stream;
+        } else {
+            var vendorURL = window.URL || window.webkitURL;
+            video.src = vendorURL ? vendorURL.createObjectURL(stream) : stream;
+        }
+        video.play();
+    },
+    function(err) {
+        console.log("An error occured! " + err);
+    }
+);
+
+video.addEventListener('loadedmetadata', function(ev){
+    initDimensions();
+}, false);
+
+function initDimensions(){
+    var height = video.videoHeight;
+    var width  = video.videoWidth;
+    
+    if(height === 0 || width === 0){
+        setTimeout(initDimensions, 100);
+    }
+    else{
+        video.width = width;
+        video.height = height;
+        
+        inCanvas.width = width;
+        inCanvas.height = height;
+        
+        outCanvas.width = width;
+        outCanvas.height = height;
+        
+        inContext = inCanvas.getContext('2d');
+        outContext = outCanvas.getContext('2d');
+        
+        initDrawing(width, height);
+    }
+}
+
+function initDrawing(width, height){
+    try{
+        outContext.drawImage(video, 0, 0, width, height);
+        render();
+    }catch(e){
+        if (e.name == "NS_ERROR_NOT_AVAILABLE") {
+            // Wait a bit before trying again; you may wish to change the
+            // length of this delay.
+            setTimeout(initDrawing, 10);
+        } else {
+            throw e;
+        }
+    }
+}
+
+function render(){
+    
+    if(false){
+        setTimeout(render, 10);
+    }
+    
+    else{
+        var width = inCanvas.width;
+        var height = inCanvas.height;
+        
+        outContext.drawImage(video, 0, 0, width, height);
+        outData = outContext.getImageData(0, 0, width, height);
+        
+        worker = new Worker("findedges.js");
+        worker.onmessage = paintCanvas;
+        // var edgeFinder = new Job("convolution.js", {}, noop, logEvent);
+        // var coordinates = new Job("coordinates.js", {}, noop, logEvent);
+        // pipeline.submit([edgeFinder], paintCanvas);
+        var data = {
+            "inData" : outData,
+            "width" : width,
+            "height" : height
+        };
+        
+        worker.postMessage(data);
+    
+                
+        //blackedges(outData.data, inData.data, width, height);
+        // findedges(inData.data, inData.data, width, height);
+        //inContext.putImageData(inData, 0, 0);
+        //setTimeout(render, 1000/10);
+    }
+}
+
+
+</script>
