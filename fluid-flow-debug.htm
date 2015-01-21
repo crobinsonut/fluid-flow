@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <!--
 	A lattice-Boltzmann fluid simulation in JavaScript, using HTML5 canvas for graphics
-	
+
 	Copyright 2013, Daniel V. Schroeder
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -39,7 +39,7 @@
 	Added sensor, contrast slider, improved tracer placement, Fy period readout, May 2013
 	Added option to animate using setTimeout instead of requestAnimationFrame, July 2013
 	Added "Flowline" plotting (actually just line segments), August 2013
-	
+
 	Still to do:
 	* Fix the apparent bug in the force calculation that gives inconsistent results depending
 		on initial conditions.  Perhaps bounce-backs between adjacent barrier sites don't cancel?
@@ -147,28 +147,28 @@ browsers. For best results, use Google Chrome.</canvas>
 </div>
 <div id="debugSettings" style="display:none">
 <div>
-	<input id="filter" type="checkbox" value="1" onclick=setProcessingFlags>filter
-	<input id="edgeDetection" type="checkBox" value="1" onclick=setProcessingFlags>edge detection
+	<input id="filter" type="checkbox" checked>filter
+	<input id="edgeDetection" type="checkBox" checked>edge detection
 </div>
 <div>
 
 	x-scale
-	<input id="xscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="sxamount.value=xscale.value" style="width:60%;autoScaleSlider=false;">
+	<input id="xscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="sxamount.value=xscale.value" style="width:60%;">
 	<output id="sxamount" name="sxamount" for="xscale">0</output>
 </div>
 <div>
 	y-scale
-	<input id="yscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="syamount.value=yscale.value" style="width:60%;autoScaleSlider=false;">
+	<input id="yscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="syamount.value=yscale.value" style="width:60%;">
 	<output id="syamount" name="syamount" for="yscale">0</output>
 </div>
 <div>
 	x-off
-	<input id="xoff" type="range" min="-2000" max="2000" step="1" value="0"  oninput="xoffamount.value=xoff.value" style="width:60%;autoScaleSlider=false;">
+	<input id="xoff" type="range" min="-2000" max="2000" step="1" value="0"  oninput="xoffamount.value=xoff.value" style="width:60%;">
 	<output id="xoffamount" name="xoffamount" for="xoff">0</output>
 </div>
 <div>
-	x-off
-	<input id="yoff" type="range" min="-2000" max="2000" step="1" value="0"  oninput="yoffamount.value=xoff.value" style="width:60%;autoScaleSlider=false;">
+	y-off
+	<input id="yoff" type="range" min="-2000" max="2000" step="1" value="0"  oninput="yoffamount.value=yoff.value" style="width:60%;">
 	<output id="yoffamount" name="yoffamount" for="yoff">0</output>
 </div>
 <div>
@@ -217,29 +217,31 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 <script src="fluid-flow_files/barrierdata.js"></script>
 <script src="multitask.js"></script>
 <script>
-	function setProcessFlags(e){
-		if(e.target.id === "filter")
+	function setProcessingFlags(e){
+		if(e.target.id === "filter"){
 			filter = !filter;
-			
-		if(e.target.id === "edgeDetection")
+		}
+
+		if(e.target.id === "edgeDetection"){
 			findEdges = !findEdges;
+		}
 	}
-	
+
 	function toggleMode(e){
 		var display = document.getElementById("simSettings").style.display;
 		var value = document.getElementById("modeButton").value;
-		
+
 		value = value === "Debug" ? "Simulation" : "Debug";
-		
+
 		document.getElementById("debugSettings").style.display = display;
 		document.getElementById("modeButton").value = value;
-		
+
 		display = display === "none" ? "block" : "none";
 		document.getElementById("simSettings").style.display = display;
-		
-		
+
+
 	}
-	
+
 	function logData(e){console.log(e.data);}
 	function logEvent(e){console.log(e);}
 	function noop(e){}
@@ -248,50 +250,58 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 		var n = e.data.outData.length;
 		var oldn = oldBarrier.length;
 		var x,y;
-	
+
 		worker.terminate();
 		worker = undefined;
-			
+
 		for(i=0; i<oldn; i+=2){
 			removeBarrier(oldBarrier[i], oldBarrier[i+1]);
 		}
-		
+
 		oldBarrier = new Array(n);
-		
+
 		for(i=0;  i<n; i+=2){
 			x = e.data.outData[i];
 			y = e.data.outData[i+1];
-			
+
 			addBarrier(x,y);
 			oldBarrier[i] = x;
 			oldBarrier[i+1] = y;
 		}
-		
+
 		paintCanvas();
 		setTimeout(render, 1000/10);
 	}
-	
-	var filter = true;
-	var findEdges = true;
-	
+
+	var filter = document.querySelector('#filter').checked ? true : false;
+	var findEdges =  document.querySelector('#edgeDetection').checked ? true : false;
+
 	var oldBarrier = new Array(0);
 	var worker;
 
 	var video = document.querySelector('#video');
 	var inCanvas = document.createElement("canvas");
 	var outCanvas = document.createElement("canvas");
-	
+
 	var inContext;
 	var outContext;
 	var inData;
 	var outData;
-	
+
 	var sxSlider = document.querySelector('#xscale');
 	var sySlider = document.querySelector('#yscale');
 	var txSlider = document.querySelector('#xoff');
 	var tySlider = document.querySelector('#yoff');
 	var coffSlider = document.querySelector('#cutoff');
-	
+
+	document.querySelector('#filter').onclick = setProcessingFlags;
+	document.querySelector('#edgeDetection').onclick = setProcessingFlags;
+	document.querySelector('#sxamount').value = sxSlider.value;
+	document.querySelector('#syamount').value = sySlider.value;
+	document.querySelector('#xoffamount').value = txSlider.value;
+	document.querySelector('#yoffamount').value = tySlider.value;
+	document.querySelector('#cutoffamount').value = coffSlider.value;
+
 	// Global variables:
 	var mobile = navigator.userAgent.match(/iPhone|iPad|iPod|Android|BlackBerry|Opera Mini|IEMobile/i)
 	var canvas = document.getElementById('theCanvas');
@@ -354,12 +364,12 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	var showingPeriod = false;
 	var lastBarrierFy = 1;						// for determining when F_y oscillation begins
 	var lastFyOscTime = 0;						// for calculating F_y oscillation period
-	
+
 	navigator.getMedia = ( navigator.getUserMedia ||
 		navigator.webkitGetUserMedia ||
 		navigator.mozGetUserMedia ||
 		navigator.msGetUserMedia);
-		
+
 	navigator.getMedia(
 		{
 			video: true,
@@ -378,11 +388,11 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 			console.log("An error occured! " + err);
 		}
 	);
-	
+
 	video.addEventListener('loadedmetadata', function(ev){
 		initDimensions();
 	}, false);
-	
+
 	canvas.addEventListener('mousedown', mouseDown, false);
 	canvas.addEventListener('mousemove', mouseMove, false);
 	document.body.addEventListener('mouseup', mouseUp, false);	// button release could occur outside canvas
@@ -447,31 +457,31 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	}
 	redList[nColors+1] = 0; greenList[nColors+1] = 0; blueList[nColors+1] = 0;	// barriers are black
 	hexColorList[nColors+1] = rgbToHex(0, 0, 0);
-			
+
 	function initDimensions(){
 		var height = video.videoHeight;
 		var width  = video.videoWidth;
-		
+
 		if(height === 0 || width === 0){
 			setTimeout(initDimensions, 100);
 		}
 		else{
 			video.width = width;
 			video.height = height;
-			
+
 			inCanvas.width = width;
 			inCanvas.height = height;
-			
+
 			outCanvas.width = width;
 			outCanvas.height = height;
-			
+
 			inContext = inCanvas.getContext('2d');
 			outContext = outCanvas.getContext('2d');
-			
+
 			initDrawing(width, height);
 		}
 	}
-	
+
 	function initDrawing(width, height){
 		try{
 			inContext.drawImage(video, 0, 0, width, height);
@@ -486,23 +496,23 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 			}
 		}
 	}
-	
+
 	function render(){
-		
+
 		if(false){
 			setTimeout(render, 10);
 		}
-		
+
 		else{
 			var width = inCanvas.width;
 			var height = inCanvas.height;
-			
+
 			outContext.drawImage(video, 0, 0, width, height);
 			outData = outContext.getImageData(0, 0, width, height);
-			
+
 			worker = new Worker("findedges.js");
 			worker.onmessage = updateBarrier;
-		
+
 			var data = {
 				"inData" : outData,
 				"width" : width,
@@ -512,10 +522,10 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 				"tx" : parseFloat(txSlider.value),
 				"ty" : parseFloat(tySlider.value),
 				"cutoff" : parseFloat(coffSlider.value),
-				"filer" : filter,
+				"filter" : filter,
 				"findEdges" : findEdges
 			};
-			
+
 			worker.postMessage(data);
 		}
 	}
@@ -1300,7 +1310,7 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 			dataArea.innerHTML += tracerX[t] + ", " + tracerY[t] + "\n";
 		}
 	}
-	
+
 </script>
 
 </body></html>
