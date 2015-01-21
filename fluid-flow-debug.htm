@@ -75,7 +75,6 @@
 
 <canvas id="theCanvas" width="600" height="240">This application runs only in modern
 browsers. For best results, use Google Chrome.</canvas>
-
 <div>
 	<select id="sizeSelect" onchange="resize()">
 		<option value="10">60 x 24</option>
@@ -90,7 +89,9 @@ browsers. For best results, use Google Chrome.</canvas>
 	<input id="resetFluidButton" onclick="initFluid()" value="Reset fluid" type="button">
 	<input id="stepButton" onclick="simulate()" value="Step" type="button">
 	<input id="startButton" onclick="startStop()" value="Start" type="button">
+	<input id="modeButton" onclick="toggleMode()" value="Debug" type="button">
 </div>
+<div id="simSettings">
 <div>
 	Flow speed = <span id="speedValue">0.100</span> 
 	<input id="speedSlider" min="0" max="0.12" step="0.005" value="0.1" onchange="adjustSpeed()" type="range">
@@ -125,28 +126,6 @@ browsers. For best results, use Google Chrome.</canvas>
 	&nbsp;&nbsp;Steps per second: <span id="speedReadout">0</span>
 	&nbsp;&nbsp;<input id="rafCheck" checked="checked" onchange="resetTimer()" type="checkbox">Faster?
 </div>
-<div>
-	x-scale
-	<input id="xscale" value="1">
-	y-scale
-	<input id="yscale" value="1"> 
-	x-off
-	<input id="xoff" value="0">
-	y-off
-	<input id="yoff" value="0">
-	cutoff
-	<input id="cutoff" min="0" max="0.2" step="0.01" value="0.2">
-	
-	
-<div style="margin-top:4px">
-	<!--<input id="pixelCheck" type="checkbox" checked onchange="resetTimer()">Use pixel graphics-->
-	Show:
-	<input id="tracerCheck" onchange="initTracers()" type="checkbox">Tracers
-	<input id="flowlineCheck" onchange="paintCanvas()" type="checkbox">Flowlines
-	<input id="forceCheck" onchange="paintCanvas()" type="checkbox">Force on barriers
-	<input id="sensorCheck" onchange="paintCanvas()" type="checkbox">Sensor
-	<input id="dataCheck" onchange="showData()" type="checkbox">Data
-</div>
 <div id="dataSection" style="display:none">
 	<textarea id="dataArea" rows="8" cols="50" disabled="disabled" readonly="readonly"></textarea>
 	<div>
@@ -156,6 +135,44 @@ browsers. For best results, use Google Chrome.</canvas>
 		<input id="debugButton" value="Debug" onclick="debug()" style="display:none" type="button">
 	</div>
 </div>
+<div style="margin-top:4px">
+	<!--<input id="pixelCheck" type="checkbox" checked onchange="resetTimer()">Use pixel graphics-->
+	Show:
+	<input id="tracerCheck" onchange="initTracers()" type="checkbox">Tracers
+	<input id="flowlineCheck" onchange="paintCanvas()" type="checkbox">Flowlines
+	<input id="forceCheck" onchange="paintCanvas()" type="checkbox">Force on barriers
+	<input id="sensorCheck" onchange="paintCanvas()" type="checkbox">Sensor
+	<input id="dataCheck" onchange="showData()" type="checkbox">Data
+</div>
+</div>
+<div id="debugSettings" style="display:none">
+<div>
+	x-scale
+	<input id="xscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="sxamount.value=xscale.value" style="width:60%;autoScaleSlider=false;">
+	<output id="sxamount" name="sxamount" for="xscale">0</output>
+</div>
+<div>
+	y-scale
+	<input id="yscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="syamount.value=yscale.value" style="width:60%;autoScaleSlider=false;">
+	<output id="syamount" name="syamount" for="yscale">0</output>
+</div>
+<div>
+	x-off
+	<input id="xoff" type="range" min="-2000" max="2000" step="1" value="0"  oninput="xoffamount.value=xoff.value" style="width:60%;autoScaleSlider=false;">
+	<output id="xoffamount" name="xoffamount" for="xoff">0</output>
+</div>
+<div>
+	x-off
+	<input id="yoff" type="range" min="-2000" max="2000" step="1" value="0"  oninput="yoffamount.value=xoff.value" style="width:60%;autoScaleSlider=false;">
+	<output id="yoffamount" name="yoffamount" for="yoff">0</output>
+</div>
+<div>
+	cutoff
+	<input id="cutoff" type="range" min="0" max="1" step="0.01" value="0.2"  oninput="cutoffamount.value=cutoff.value" style="width:60%;autoScaleSlider=false;">
+	<output id="cutoffamount" name="cutoffamount" for="cutoff">0</output>
+</div>
+</div>
+
 <p style="text-align:left">This is a simulation of a two-dimensional fluid. Initially the fluid
 is flowing from left to right, and a linear barrier (shown in black) diverts the fluid and creates 
 vortices. The colors indicate the curl, or local rotational motion, of the fluid.  
@@ -195,6 +212,21 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 <script src="fluid-flow_files/barrierdata.js"></script>
 <script src="multitask.js"></script>
 <script>
+	function toggleMode(e){
+		var display = document.getElementById("simSettings").style.display;
+		var value = document.getElementById("modeButton").value;
+		
+		value = value === "Debug" ? "Simulation" : "Debug";
+		
+		document.getElementById("debugSettings").style.display = display;
+		document.getElementById("modeButton").value = value;
+		
+		display = display === "none" ? "block" : "none";
+		document.getElementById("simSettings").style.display = display;
+		
+		
+	}
+	
 	function logData(e){console.log(e.data);}
 	function logEvent(e){console.log(e);}
 	function noop(e){}
