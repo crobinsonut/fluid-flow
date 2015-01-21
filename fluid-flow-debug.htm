@@ -4,31 +4,31 @@
 	
 	Copyright 2013, Daniel V. Schroeder
 
-	Permission is hereby granted, free of charge, to any person obtaining a copy of 
-	this software and associated data and documentation (the "Software"), to deal in 
-	the Software without restriction, including without limitation the rights to 
-	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
-	of the Software, and to permit persons to whom the Software is furnished to do 
+	Permission is hereby granted, free of charge, to any person obtaining a copy of
+	this software and associated data and documentation (the "Software"), to deal in
+	the Software without restriction, including without limitation the rights to
+	use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies
+	of the Software, and to permit persons to whom the Software is furnished to do
 	so, subject to the following conditions:
 
-	The above copyright notice and this permission notice shall be included in all 
+	The above copyright notice and this permission notice shall be included in all
 	copies or substantial portions of the Software.
 
-	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A 
-	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR 
-	ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
-	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR 
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED,
+	INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A
+	PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+	ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+	OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 	OTHER DEALINGS IN THE SOFTWARE.
 
-	Except as contained in this notice, the name of the author shall not be used in 
-	advertising or otherwise to promote the sale, use or other dealings in this 
+	Except as contained in this notice, the name of the author shall not be used in
+	advertising or otherwise to promote the sale, use or other dealings in this
 	Software without prior written authorization.
 
 	Credits:
 	The "wind tunnel" entry/exit conditions are inspired by Graham Pullan's code
-	(http://www.many-core.group.cam.ac.uk/projects/LBdemo.shtml).  Additional inspiration from 
-	Thomas Pohl's applet (http://thomas-pohl.info/work/lba.html).  Other portions of code are based 
+	(http://www.many-core.group.cam.ac.uk/projects/LBdemo.shtml).  Additional inspiration from
+	Thomas Pohl's applet (http://thomas-pohl.info/work/lba.html).  Other portions of code are based
 	on Wagner (http://www.ndsu.edu/physics/people/faculty/wagner/lattice_boltzmann_codes/) and
 	Gonsalves (http://www.physics.buffalo.edu/phy411-506-2004/index.html; code adapted from Succi,
 	http://global.oup.com/academic/product/the-lattice-boltzmann-equation-9780199679249).
@@ -69,8 +69,8 @@
 
 <h2>Fluid Dynamics Simulation</h2>
 
-<p>By <a href="http://physics.weber.edu/schroeder/">Dan Schroeder</a>, 
-<a href="http://physics.weber.edu/">Physics Department</a>, 
+<p>By <a href="http://physics.weber.edu/schroeder/">Dan Schroeder</a>,
+<a href="http://physics.weber.edu/">Physics Department</a>,
 <a href="http://weber.edu/">Weber State University</a></p>
 
 <canvas id="theCanvas" width="600" height="240">This application runs only in modern
@@ -93,7 +93,7 @@ browsers. For best results, use Google Chrome.</canvas>
 </div>
 <div id="simSettings">
 <div>
-	Flow speed = <span id="speedValue">0.100</span> 
+	Flow speed = <span id="speedValue">0.100</span>
 	<input id="speedSlider" min="0" max="0.12" step="0.005" value="0.1" onchange="adjustSpeed()" type="range">
 	&nbsp;&nbsp;Viscosity = <span id="viscValue">0.020</span>
 	<input id="viscSlider" min="0.005" max="0.2" step="0.005" value="0.02" onchange="adjustViscosity()" type="range">
@@ -147,6 +147,11 @@ browsers. For best results, use Google Chrome.</canvas>
 </div>
 <div id="debugSettings" style="display:none">
 <div>
+	<input id="filter" type="checkbox" value="1" onclick=setProcessingFlags>filter
+	<input id="edgeDetection" type="checkBox" value="1" onclick=setProcessingFlags>edge detection
+</div>
+<div>
+
 	x-scale
 	<input id="xscale" type="range" min="0.01" max="10" step="0.01" value="1"  oninput="sxamount.value=xscale.value" style="width:60%;autoScaleSlider=false;">
 	<output id="sxamount" name="sxamount" for="xscale">0</output>
@@ -174,14 +179,14 @@ browsers. For best results, use Google Chrome.</canvas>
 </div>
 
 <p style="text-align:left">This is a simulation of a two-dimensional fluid. Initially the fluid
-is flowing from left to right, and a linear barrier (shown in black) diverts the fluid and creates 
-vortices. The colors indicate the curl, or local rotational motion, of the fluid.  
+is flowing from left to right, and a linear barrier (shown in black) diverts the fluid and creates
+vortices. The colors indicate the curl, or local rotational motion, of the fluid.
 Use the controls to adjust the flow speed and viscosity, draw different barriers, drag the
 fluid around, plot other quantities besides the curl, show the force exerted by the fluid
 on the barriers, and measure the fluid's density and velocity at any point. Enjoy!</p>
 
 <p style="text-align:left">The simulation uses a fairly simple
-<a href="http://en.wikipedia.org/wiki/Lattice_Boltzmann_methods">lattice-Boltzmann algorithm</a>, 
+<a href="http://en.wikipedia.org/wiki/Lattice_Boltzmann_methods">lattice-Boltzmann algorithm</a>,
 which you can see by viewing the JavaScript source code. As of mid-2013, the simulation
 runs fastest under Chrome on either MacOS or Windows.  Firefox is somewhat slower and Safari slower still,
 while Opera and Internet Explorer are much slower. You can adjust the resolution to increase or
@@ -200,9 +205,9 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	<ul>
 	<li><a href="http://physics.weber.edu/schroeder/fluids/LatticeBoltzmannDemo.java.txt">A similar simulation in Java</a></li>
 	<li><a href="http://physics.weber.edu/schroeder/fluids/LatticeBoltzmannDemo.py.txt">A similar simulation in Python</a></li>
-	<li><a href="http://physics.weber.edu/schroeder/fluids/FluidSimulationsForUndergrads.pdf">Poster presentation</a> 
+	<li><a href="http://physics.weber.edu/schroeder/fluids/FluidSimulationsForUndergrads.pdf">Poster presentation</a>
 	given at the AAPT summer meeting, 2013 (pdf, 2.6 MB)</li>
-	<li><a href="http://physics.weber.edu/schroeder/javacourse/LatticeBoltzmann.pdf">Instructions</a> 
+	<li><a href="http://physics.weber.edu/schroeder/javacourse/LatticeBoltzmann.pdf">Instructions</a>
 	for a lattice-Boltzmann project in a computational physics course</li>
 	<li>A more detailed explanation of the lattice-Boltzmann algorithm (coming soon)</li>
 	</ul>
@@ -212,6 +217,14 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 <script src="fluid-flow_files/barrierdata.js"></script>
 <script src="multitask.js"></script>
 <script>
+	function setProcessFlags(e){
+		if(e.target.id === "filter")
+			filter = !filter;
+			
+		if(e.target.id === "edgeDetection")
+			findEdges = !findEdges;
+	}
+	
 	function toggleMode(e){
 		var display = document.getElementById("simSettings").style.display;
 		var value = document.getElementById("modeButton").value;
@@ -258,6 +271,9 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 		setTimeout(render, 1000/10);
 	}
 	
+	var filter = true;
+	var findEdges = true;
+	
 	var oldBarrier = new Array(0);
 	var worker;
 
@@ -265,7 +281,7 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	var inCanvas = document.createElement("canvas");
 	var outCanvas = document.createElement("canvas");
 	
-	var inContext; 
+	var inContext;
 	var outContext;
 	var inData;
 	var outData;
@@ -276,7 +292,7 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	var tySlider = document.querySelector('#yoff');
 	var coffSlider = document.querySelector('#cutoff');
 	
-	// Global variables:	
+	// Global variables:
 	var mobile = navigator.userAgent.match(/iPhone|iPad|iPod|Android|BlackBerry|Opera Mini|IEMobile/i)
 	var canvas = document.getElementById('theCanvas');
 	var context = canvas.getContext('2d');
@@ -327,7 +343,7 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	var barrierySum = 0;
 	var barrierFx = 0.0;						// total force on all barrier sites
 	var barrierFy = 0.0;
-	var sensorX = xdim / 2;						// coordinates of "sensor" to measure local fluid properties	
+	var sensorX = xdim / 2;						// coordinates of "sensor" to measure local fluid properties
 	var sensorY = ydim / 2;
 	var draggingSensor = false;
 	var mouseIsDown = false;
@@ -339,18 +355,18 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 	var lastBarrierFy = 1;						// for determining when F_y oscillation begins
 	var lastFyOscTime = 0;						// for calculating F_y oscillation period
 	
-	navigator.getMedia = ( navigator.getUserMedia || 
+	navigator.getMedia = ( navigator.getUserMedia ||
 		navigator.webkitGetUserMedia ||
 		navigator.mozGetUserMedia ||
 		navigator.msGetUserMedia);
 		
 	navigator.getMedia(
-		{ 
-			video: true, 
-			audio: false 
+		{
+			video: true,
+			audio: false
 		},
 		function(stream) {
-			if (navigator.mozGetUserMedia) { 
+			if (navigator.mozGetUserMedia) {
 				video.mozSrcObject = stream;
 			} else {
 				var vendorURL = window.URL || window.webkitURL;
@@ -495,7 +511,9 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 				"sy" : parseFloat(sySlider.value),
 				"tx" : parseFloat(txSlider.value),
 				"ty" : parseFloat(tySlider.value),
-				"cutoff" : parseFloat(coffSlider.value)
+				"cutoff" : parseFloat(coffSlider.value),
+				"filer" : filter,
+				"findEdges" : findEdges
 			};
 			
 			worker.postMessage(data);
@@ -529,10 +547,10 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 
 	// Mysterious gymnastics that are apparently useful for better cross-browser animation timing:
 	window.requestAnimFrame = (function(callback) {
-		return 	window.requestAnimationFrame || 
-			window.webkitRequestAnimationFrame || 
-			window.mozRequestAnimationFrame || 
-			window.oRequestAnimationFrame || 
+		return 	window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
 			window.msRequestAnimationFrame ||
 			function(callback) {
 				window.setTimeout(callback, 1);		// second parameter is time in ms
@@ -830,7 +848,7 @@ has a few bugs and awkward features, which I hope to address some day.</p>
 				//}
 			}
 		}
-		//if (pixelGraphics) 
+		//if (pixelGraphics)
 		context.putImageData(image, 0, 0);		// blast image to the screen
 		// Draw tracers, force vector, and/or sensor if appropriate:
 		if (tracerCheck.checked) drawTracers();

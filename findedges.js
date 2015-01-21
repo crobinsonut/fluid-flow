@@ -2,12 +2,12 @@ onmessage = function(e){
     var imageData = new ImageData(e.data.width, e.data.height);
     var coord = [];
     imageData.data.set(e.data.inData.data);
-    blackedges(e.data.cutoff, e.data.inData.data, imageData.data, e.data.width, e.data.height, e.data.sx, e.data.sy, e.data.tx, e.data.ty, coord);
+    blackedges(e.data.cutoff, e.data.inData.data, imageData.data, e.data.width, e.data.height, e.data.sx, e.data.sy, e.data.tx, e.data.ty, coord, e.data.filter, e.data.findEdges);
     postMessage({"outData" : coord});
 };
 
 // A 3x3 Sobel edge detect (similar to Photoshop's)
-function blackedges(cutoff, inData, outData, width, height, sx, sy, tx, ty, coord) {
+function blackedges(cutoff, inData, outData, width, height, sx, sy, tx, ty, coord, filterFlag, edgeFlag) {
     // findblack
     var x_camera, y_camera;
     var x_grid, y_grid;
@@ -19,67 +19,71 @@ function blackedges(cutoff, inData, outData, width, height, sx, sy, tx, ty, coor
     midData = [],
     r, g, b;
     
-    for (var i=0;i<n;i+=4) {
-        r = inData[i];
-        g = inData[i+1];
-        b = inData[i+2];
-        
-        if (Math.max(r/255, g/255, b/255) <= cutoff) {
-            midData[i] = 0;
-            midData[i+1] = 0;
-            midData[i+2] = 0;
-            midData[i+3] = 255;
-        } else {
-            midData[i] = 255;
-            midData[i+1] = 255;
-            midData[i+2] = 255;
-            midData[i+3] = 255;
+    if(filterFlag){
+        for (var i=0;i<n;i+=4) {
+            r = inData[i];
+            g = inData[i+1];
+            b = inData[i+2];
+            
+            if (Math.max(r/255, g/255, b/255) <= cutoff) {
+                midData[i] = 0;
+                midData[i+1] = 0;
+                midData[i+2] = 0;
+                midData[i+3] = 255;
+            } else {
+                midData[i] = 255;
+                midData[i+1] = 255;
+                midData[i+2] = 255;
+                midData[i+3] = 255;
+            }
         }
     }
     
-    // blackedges: apply findedges to findblack
-    var i,
-    outline = [],
-    j = 0,
-    r, c,
-    data1 = [],
-    data2 = [],
-    gr1, gr2, gg1, gg2, gb1, gb2,
-    prog, lastProg = 0,
-    convProgress1, convProgress2;
-    
-    convolve3x3(midData, data1, width, height,
-        [[-1, 0, 1],
-        [-2, 0, 2],
-        [-1, 0, 1]]
-    );
-    convolve3x3(midData, data2, width, height,
-        [[-1, -2, -1],
-        [ 0,  0,  0],
-        [ 1,  2,  1]]
-    );
-    
-    for (i=0;i<n;i+=4) {
-        gr1 = Math.abs(data1[i]);
-        gr2 = Math.abs(data2[i]);
-        gg1 = Math.abs(data1[i+1]);
-        gg2 = Math.abs(data2[i+1]);
-        gb1 = Math.abs(data1[i+2]);
-        gb2 = Math.abs(data2[i+2]);
+    if(edgeFlag){
+        // blackedges: apply findedges to findblack
+        var i,
+        outline = [],
+        j = 0,
+        r, c,
+        data1 = [],
+        data2 = [],
+        gr1, gr2, gg1, gg2, gb1, gb2,
+        prog, lastProg = 0,
+        convProgress1, convProgress2;
         
-        outData[i] = 255 - (gr1 + gr2) * 0.8;
-        outData[i+1] = 255 - (gg1 + gg2) * 0.8;
-        outData[i+2] = 255 - (gb1 + gb2) * 0.8;
-        outData[i+3] = inData[i+3];
+        convolve3x3(midData, data1, width, height,
+            [[-1, 0, 1],
+            [-2, 0, 2],
+            [-1, 0, 1]]
+        );
+        convolve3x3(midData, data2, width, height,
+            [[-1, -2, -1],
+            [ 0,  0,  0],
+            [ 1,  2,  1]]
+        );
+        
+        for (i=0;i<n;i+=4) {
+            gr1 = Math.abs(data1[i]);
+            gr2 = Math.abs(data2[i]);
+            gg1 = Math.abs(data1[i+1]);
+            gg2 = Math.abs(data2[i+1]);
+            gb1 = Math.abs(data1[i+2]);
+            gb2 = Math.abs(data2[i+2]);
+            
+            outData[i] = 255 - (gr1 + gr2) * 0.8;
+            outData[i+1] = 255 - (gg1 + gg2) * 0.8;
+            outData[i+2] = 255 - (gb1 + gb2) * 0.8;
+            outData[i+3] = inData[i+3];
+        }
+        
+        // wipe out bottom black edge
+        for (k=4*width*(height-1);k<4*width*height;k++) {
+            outData[k] = 255;
+        }
+        
+        var grid_idx;
+        var n = width * height;
     }
-    
-    // wipe out bottom black edge
-    for (k=4*width*(height-1);k<4*width*height;k++) {
-        outData[k] = 255;
-    }
-    
-    var grid_idx;
-    var n = width * height;
     
     for(var i=0; i<n; i++){
         if(outData[i*4] === 0){
